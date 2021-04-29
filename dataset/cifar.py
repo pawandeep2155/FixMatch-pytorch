@@ -104,14 +104,23 @@ def get_filtered1500(args, root):
     # # base_dataset = datasets.CIFAR10(root, train=True, download=True)
 
     train_labeled_idxs, train_unlabeled_idxs = x_u_split(args, base_dataset.targets)
-    train_labeled_dataset = Filtered1500SSL(base_dataset, indexs=train_labeled_idxs, transform=transform_labeled)
-    train_unlabeled_dataset = Filtered1500SSL(
-        base_dataset,
-        indexs=train_unlabeled_idxs,
-        transform=TransformFixMatch(mean=cifar10_mean, std=cifar10_std))
 
-    test_base_dataset = datasets.ImageFolder(dataset_train_path)
-    test_dataset = Filtered1500SSL(test_base_dataset, transform=transform_val)
+    train_labeled_dataset = torch.utils.data.Subset(base_dataset, indices=train_labeled_idxs)
+    train_labeled_dataset.dataset.transform = transform_labeled
+
+    train_unlabeled_dataset = torch.utils.data.Subset(base_dataset, indices=train_unlabeled_idxs)
+    train_unlabeled_dataset.dataset.transform = TransformFixMatch(mean=cifar10_mean, std=cifar10_std)
+
+    test_dataset = datasets.ImageFolder(dataset_val_path, transform=transform_val)
+
+    # train_labeled_dataset = Filtered1500SSL(base_dataset, indexs=train_labeled_idxs, transform=transform_labeled)
+    # train_unlabeled_dataset = Filtered1500SSL(
+    #     base_dataset,
+    #     indexs=train_unlabeled_idxs,
+    #     transform=TransformFixMatch(mean=cifar10_mean, std=cifar10_std))
+    #
+    # test_base_dataset = datasets.ImageFolder(dataset_val_path)
+    # test_dataset = Filtered1500SSL(test_base_dataset, transform=transform_val)
 
     return train_labeled_dataset, train_unlabeled_dataset, test_dataset
 
@@ -119,7 +128,7 @@ def get_filtered1500(args, root):
 class Filtered1500SSL:
     def __init__(self, data, indexs=None, transform=None, target_transform=None):
         super().__init__()
-        self.targets = self.data.targets
+        self.targets = data.targets
         if indexs is not None:
             self.data = torch.utils.data.Subset(data, indices=indexs)
             self.targets = [self.targets[i] for i in indexs]

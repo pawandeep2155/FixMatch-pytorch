@@ -5,6 +5,7 @@ import numpy as np
 from PIL import Image
 from torchvision import datasets
 from torchvision import transforms
+import torch.utils.data
 
 from .randaugment import RandAugmentMC
 
@@ -118,9 +119,10 @@ def get_filtered1500(args, root):
 class Filtered1500SSL:
     def __init__(self, data, indexs=None, transform=None, target_transform=None):
         super().__init__()
-        if indexs is not None:
-            self.data = data[indexs]
         self.targets = self.data.targets
+        if indexs is not None:
+            self.data = torch.utils.data.Subset(data, indices=indexs)
+            self.targets = [self.targets[i] for i in indexs]
         self.transform = transform
         self.target_transform = target_transform
 

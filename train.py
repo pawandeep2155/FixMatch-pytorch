@@ -199,7 +199,7 @@ def main():
             args.model_depth = 29
             args.model_width = 64
     elif args.dataset == 'filtered1500':
-        args.num_classes = 10
+        args.num_classes = 4
         if args.arch == 'wideresnet':
             args.model_depth = 28
             args.model_width = 2

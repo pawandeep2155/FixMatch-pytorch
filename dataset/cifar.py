@@ -83,6 +83,7 @@ def get_cifar100(args, root):
 
 
 def get_filtered1500(args, root):
+    dataset_path = "../dataset/filtered_1500/train/"
     transform_labeled = transforms.Compose([
         transforms.RandomHorizontalFlip(),
         transforms.RandomCrop(size=32,
@@ -95,7 +96,8 @@ def get_filtered1500(args, root):
         transforms.ToTensor(),
         transforms.Normalize(mean=cifar10_mean, std=cifar10_std)
     ])
-    base_dataset = datasets.CIFAR10(root, train=True, download=True)
+    base_dataset = datasets.ImageFolder(dataset_path)
+    # base_dataset = datasets.CIFAR10(root, train=True, download=True)
 
     train_labeled_idxs, train_unlabeled_idxs = x_u_split(
         args, base_dataset.targets)

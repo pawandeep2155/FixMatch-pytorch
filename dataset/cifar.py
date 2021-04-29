@@ -84,6 +84,40 @@ def get_cifar100(args, root):
     return train_labeled_dataset, train_unlabeled_dataset, test_dataset
 
 
+def get_filtered1500(args, root):
+    transform_labeled = transforms.Compose([
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomCrop(size=32,
+                              padding=int(32*0.125),
+                              padding_mode='reflect'),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=cifar100_mean, std=cifar100_std)])
+
+    transform_val = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize(mean=cifar100_mean, std=cifar100_std)])
+
+    base_dataset = datasets.CIFAR100(
+        root, train=True, download=True)
+
+    train_labeled_idxs, train_unlabeled_idxs = x_u_split(
+        args, base_dataset.targets)
+
+    train_labeled_dataset = CIFAR100SSL(
+        root, train_labeled_idxs, train=True,
+        transform=transform_labeled)
+
+    train_unlabeled_dataset = CIFAR100SSL(
+        root, train_unlabeled_idxs, train=True,
+        transform=TransformFixMatch(mean=cifar100_mean, std=cifar100_std))
+
+    test_dataset = datasets.CIFAR100(
+        root, train=False, transform=transform_val, download=False)
+
+    return train_labeled_dataset, train_unlabeled_dataset, test_dataset
+
+
+
 def x_u_split(args, labels):
     label_per_class = args.num_labeled // args.num_classes
     labels = np.array(labels)
@@ -179,4 +213,5 @@ class CIFAR100SSL(datasets.CIFAR100):
 
 
 DATASET_GETTERS = {'cifar10': get_cifar10,
-                   'cifar100': get_cifar100}
+                   'cifar100': get_cifar100,
+                   'filtered1500': get_filtered1500}

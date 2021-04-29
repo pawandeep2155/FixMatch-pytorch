@@ -83,7 +83,9 @@ def get_cifar100(args, root):
 
 
 def get_filtered1500(args, root):
-    dataset_path = "../dataset/filtered_1500/train/"
+    dataset_train_path = "../dataset/filtered_1500/train/"
+    dataset_val_path = "../dataset/filtered_1500/validation/"
+
     transform_labeled = transforms.Compose([
         transforms.RandomHorizontalFlip(),
         transforms.RandomCrop(size=32,
@@ -96,25 +98,43 @@ def get_filtered1500(args, root):
         transforms.ToTensor(),
         transforms.Normalize(mean=cifar10_mean, std=cifar10_std)
     ])
-    base_dataset = datasets.ImageFolder(dataset_path)
-    # base_dataset = datasets.CIFAR10(root, train=True, download=True)
 
-    train_labeled_idxs, train_unlabeled_idxs = x_u_split(
-        args, base_dataset.targets)
+    base_dataset = datasets.ImageFolder(dataset_train_path)
+    # # base_dataset = datasets.CIFAR10(root, train=True, download=True)
 
-    train_labeled_dataset = CIFAR10SSL(
-        root, train_labeled_idxs, train=True,
-        transform=transform_labeled)
-
-    train_unlabeled_dataset = CIFAR10SSL(
-        root, train_unlabeled_idxs, train=True,
+    train_labeled_idxs, train_unlabeled_idxs = x_u_split(args, base_dataset.targets)
+    train_labeled_dataset = Filtered1500SSL(base_dataset, indexs=train_labeled_idxs, transform=transform_labeled)
+    train_unlabeled_dataset = Filtered1500SSL(
+        base_dataset,
+        indexs=train_unlabeled_idxs,
         transform=TransformFixMatch(mean=cifar10_mean, std=cifar10_std))
 
-    test_dataset = datasets.CIFAR10(
-        root, train=False, transform=transform_val, download=False)
+    test_base_dataset = datasets.ImageFolder(dataset_train_path)
+    test_dataset = Filtered1500SSL(test_base_dataset, transform=transform_val)
 
     return train_labeled_dataset, train_unlabeled_dataset, test_dataset
 
+
+class Filtered1500SSL:
+    def __init__(self, data, indexs=None, transform=None, target_transform=None):
+        super().__init__()
+        if indexs is not None:
+            self.data = data[indexs]
+        self.targets = self.data.targets
+        self.transform = transform
+        self.target_transform = target_transform
+
+    def __getitem__(self, index):
+        img, target = self.data[index], self.targets[index]
+        img = Image.fromarray(img)
+
+        if self.transform is not None:
+            img = self.transform(img)
+
+        if self.target_transform is not None:
+            target = self.target_transform(target)
+
+        return img, target
 
 
 def x_u_split(args, labels):
@@ -170,8 +190,8 @@ class CIFAR10SSL(datasets.CIFAR10):
                          target_transform=target_transform,
                          download=download)
         if indexs is not None:
-            self.data = self.data[indexs]
-            self.targets = np.array(self.targets)[indexs]
+            self.data = self.data[indexs]  # (200, 32, 32, 3)
+            self.targets = np.array(self.targets)[indexs]  # (200,)
 
     def __getitem__(self, index):
         img, target = self.data[index], self.targets[index]

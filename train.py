@@ -357,6 +357,8 @@ def train(args, labeled_trainloader, unlabeled_trainloader, test_loader,
                 (inputs_u_w, inputs_u_s), _ = unlabeled_iter.next()
 
             data_time.update(time.time() - end)
+            if isinstance(inputs_x, list):
+                inputs_x = inputs_x[0]
             batch_size = inputs_x.shape[0]
             inputs = interleave(
                 torch.cat((inputs_x, inputs_u_w, inputs_u_s)), 2 * args.mu + 1).to(args.device)
@@ -478,7 +480,7 @@ def test(args, test_loader, model, epoch):
             outputs = model(inputs)
             loss = F.cross_entropy(outputs, targets)
 
-            prec1, prec5 = accuracy(outputs, targets, topk=(1, 5))
+            prec1, prec5 = accuracy(outputs, targets, topk=(1, 3))
             losses.update(loss.item(), inputs.shape[0])
             top1.update(prec1.item(), inputs.shape[0])
             top5.update(prec5.item(), inputs.shape[0])

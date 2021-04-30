@@ -71,19 +71,19 @@ def main():
                         help='id(s) for CUDA_VISIBLE_DEVICES')
     parser.add_argument('--num-workers', type=int, default=4,
                         help='number of workers')
-    parser.add_argument('--dataset', default='cifar10', type=str,
+    parser.add_argument('--dataset', default='filtered1500', type=str,
                         choices=['cifar10', 'cifar100', 'filtered1500'],
                         help='dataset name')
-    parser.add_argument('--num-labeled', type=int, default=4000,
+    parser.add_argument('--num-labeled', type=int, default=2000,
                         help='number of labeled data')
     parser.add_argument("--expand-labels", action="store_true",
                         help="expand labels to fit eval steps")
     parser.add_argument('--arch', default='wideresnet', type=str,
                         choices=['wideresnet', 'resnext'],
                         help='dataset name')
-    parser.add_argument('--total-steps', default=2 ** 2, type=int,
+    parser.add_argument('--total-steps', default=2 ** 20, type=int,
                         help='number of total steps to run')
-    parser.add_argument('--eval-step', default=2, type=int,
+    parser.add_argument('--eval-step', default=1024, type=int,
                         help='number of eval steps to run')
     parser.add_argument('--start-epoch', default=0, type=int,
                         help='manual epoch number (useful on restarts)')
@@ -199,7 +199,7 @@ def main():
             args.model_depth = 29
             args.model_width = 64
     elif args.dataset == 'filtered1500':
-        args.num_classes = 4
+        args.num_classes = 8
         if args.arch == 'wideresnet':
             args.model_depth = 28
             args.model_width = 2

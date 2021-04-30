@@ -6,6 +6,7 @@ from PIL import Image
 from torchvision import datasets
 from torchvision import transforms
 import torch.utils.data
+import copy
 
 from .randaugment import RandAugmentMC
 
@@ -84,8 +85,8 @@ def get_cifar100(args, root):
 
 
 def get_filtered1500(args, root):
-    dataset_train_path = "../dataset/filtered_1500/train/"
-    dataset_val_path = "../dataset/filtered_1500/validation/"
+    dataset_train_path = "../dataset/Tata/images/train/"
+    dataset_val_path = "../dataset/Tata/images/validation/"
 
     transform_labeled = transforms.Compose([
         transforms.RandomHorizontalFlip(),
@@ -107,10 +108,10 @@ def get_filtered1500(args, root):
 
     train_labeled_idxs, train_unlabeled_idxs = x_u_split(args, base_dataset.targets)
 
-    train_labeled_dataset = torch.utils.data.Subset(base_dataset, indices=train_labeled_idxs)
+    train_labeled_dataset = copy.deepcopy(torch.utils.data.Subset(base_dataset, indices=train_labeled_idxs))
     train_labeled_dataset.dataset.transform = transform_labeled
 
-    train_unlabeled_dataset = torch.utils.data.Subset(base_dataset, indices=train_unlabeled_idxs)
+    train_unlabeled_dataset = copy.deepcopy(torch.utils.data.Subset(base_dataset, indices=train_unlabeled_idxs))
     train_unlabeled_dataset.dataset.transform = TransformFixMatch(mean=cifar10_mean, std=cifar10_std)
 
     test_dataset = datasets.ImageFolder(dataset_val_path, transform=transform_val)

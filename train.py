@@ -259,8 +259,8 @@ def main():
     optimizer = optim.SGD(grouped_parameters, lr=args.lr,
                           momentum=0.9, nesterov=args.nesterov)
 
-    #args.epochs = math.ceil(args.total_steps / args.eval_step)
-    args.epochs = 2
+    args.epochs = math.ceil(args.total_steps / args.eval_step)
+    # args.epochs = 2
     scheduler = get_cosine_schedule_with_warmup(
         optimizer, args.warmup, args.total_steps)
 
